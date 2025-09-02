@@ -1,0 +1,35 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 每小时执行一次
+  workflow_dispatch:     # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # 使用 Personal Access Token (PAT) 以触发后续工作流
+          # 如果不需要触发其他工作流，可以使用默认的 GITHUB_TOKEN
+          token: ${{ secrets.PAT }} 
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/sambecker/exif-photo-blog.git
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Sync main branch
+        run: |
+          git checkout main
+          git merge upstream/main
+          git push origin main
