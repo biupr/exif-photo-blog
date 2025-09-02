@@ -2,7 +2,7 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour
+    - cron: '0 0 * * *'  # Runs every hour
   workflow_dispatch:     # Allows manual triggering
 
 jobs:
@@ -32,5 +32,5 @@ jobs:
         run: |
           git checkout main
           # Add --allow-unrelated-histories as a failsafe
-          git merge upstream/main --allow-unrelated-histories
+          git merge upstream/main
           git push origin main
