@@ -2,37 +2,35 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 每小时执行一次
-  workflow_dispatch:     # 允许手动触发
-
-permissions:
-  contents: write
+    - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:     # Allows manual triggering
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout Fork
+        uses: actions/checkout@v4
         with:
-          # 使用 Personal Access Token (PAT) 以触发后续工作流
-          # 如果不需要触发其他工作流，可以使用默认的 GITHUB_TOKEN
-          token: ${{ secrets.PAT }} 
+          # This is the crucial step: fetches all history for all branches and tags
+          fetch-depth: 0 
+          token: ${{ secrets.PAT }} # Using a PAT is recommended
 
-      - name: Set up Git
+      - name: Configure Git
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Add upstream remote
+      - name: Add Upstream Remote
         run: git remote add upstream https://github.com/sambecker/exif-photo-blog.git
 
-      - name: Fetch upstream
+      - name: Fetch Upstream
         run: git fetch upstream
 
-      - name: Sync main branch
+      - name: Merge Upstream Changes
         run: |
           git checkout main
-          git merge upstream/main
+          # Add --allow-unrelated-histories as a failsafe
+          git merge upstream/main --allow-unrelated-histories
           git push origin main
