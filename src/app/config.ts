@@ -359,7 +359,7 @@ export const GEO_PRIVACY_ENABLED =
   process.env.NEXT_PUBLIC_GEO_PRIVACY === '1';
 export const ALLOW_PUBLIC_DOWNLOADS =
   process.env.NEXT_PUBLIC_ALLOW_PUBLIC_DOWNLOADS === '1';
-export const SOCIAL_KEYS = parseSocialKeysFromString(
+export const SOCIAL_NETWORKS = parseSocialKeysFromString(
   // Legacy environment variable
   process.env.NEXT_PUBLIC_HIDE_SOCIAL === '1'
     ? 'none'
@@ -369,6 +369,15 @@ export const SITE_FEEDS_ENABLED =
   process.env.NEXT_PUBLIC_SITE_FEEDS === '1';
 export const OG_TEXT_BOTTOM_ALIGNMENT =
   (process.env.NEXT_PUBLIC_OG_TEXT_ALIGNMENT ?? '').toUpperCase() === 'BOTTOM';
+
+// SCRIPTS & ANALYTICS
+
+export const PAGE_SCRIPT_URLS = process.env.PAGE_SCRIPT_URLS
+  ? process.env.PAGE_SCRIPT_URLS
+    .split(',')
+    .map(url => url.trim().toLocaleLowerCase())
+    .filter(url => url.startsWith('https://'))
+  : [];
 
 // INTERNAL
 
@@ -382,10 +391,6 @@ export const APP_CONFIGURATION = {
   // Storage
   hasDatabase: HAS_DATABASE,
   isPostgresSslEnabled: POSTGRES_SSL_ENABLED,
-  hasVercelPostgres: (
-    /\/verceldb\?/.test(process.env.POSTGRES_URL ?? '') ||
-    /\.vercel-storage\.com\//.test(process.env.POSTGRES_URL ?? '')
-  ),
   hasRedisStorage: HAS_REDIS_STORAGE,
   hasVercelBlobStorage: HAS_VERCEL_BLOB_STORAGE,
   hasCloudflareR2Storage: HAS_CLOUDFLARE_R2_STORAGE,
@@ -490,9 +495,12 @@ export const APP_CONFIGURATION = {
   isGeoPrivacyEnabled: GEO_PRIVACY_ENABLED,
   arePublicDownloadsEnabled: ALLOW_PUBLIC_DOWNLOADS,
   hasSocialKeys: Boolean(process.env.NEXT_PUBLIC_SOCIAL_NETWORKS),
-  socialKeys: SOCIAL_KEYS,
+  socialKeys: SOCIAL_NETWORKS,
   areSiteFeedsEnabled: SITE_FEEDS_ENABLED,
   isOgTextBottomAligned: OG_TEXT_BOTTOM_ALIGNMENT,
+  // Scripts & Analytics
+  hasPageScriptUrls: PAGE_SCRIPT_URLS.length > 0,
+  pageScriptUrls: PAGE_SCRIPT_URLS,
   // Internal
   areInternalToolsEnabled: (
     ADMIN_DEBUG_TOOLS_ENABLED ||
