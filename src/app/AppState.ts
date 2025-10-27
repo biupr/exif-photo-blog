@@ -18,7 +18,6 @@ import { SWRKey } from '@/swr';
 
 export type AppStateContextType = {
   // CORE
-  previousPathname?: string
   hasLoaded?: boolean
   hasLoadedWithAnimations?: boolean
   invalidateSwr?: (key?: SWRKey, revalidate?: boolean) => void
@@ -31,6 +30,8 @@ export type AppStateContextType = {
   categoriesWithCounts?: Awaited<ReturnType<
     typeof getCountsForCategoriesCachedAction
   >>
+  // ENVIRONMENT
+  supportsHover?: boolean
   // MODAL
   isCommandKOpen?: boolean
   setIsCommandKOpen?: Dispatch<SetStateAction<boolean>>

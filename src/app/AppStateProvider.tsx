@@ -9,7 +9,6 @@ import {
 } from 'react';
 import { AppStateContext } from '../app/AppState';
 import { AnimationConfig } from '@/components/AnimateItems';
-import usePathnames from '@/utility/usePathnames';
 import { getAuthAction } from '@/auth/actions';
 import useSWR, { useSWRConfig } from 'swr';
 import {
@@ -41,6 +40,7 @@ import {
   SWRKey,
 } from '@/swr';
 import { warmRedisAction } from './actions';
+import useSupportsHover from '@/utility/useSupportsHover';
 
 export default function AppStateProvider({
   children,
@@ -53,8 +53,6 @@ export default function AppStateProvider({
 
   const pathname = usePathname();
 
-  const { previousPathname } = usePathnames();
-
   // CORE
   const [hasLoaded, setHasLoaded] =
     useState(false);
@@ -62,12 +60,12 @@ export default function AppStateProvider({
     useState(false);
   const [nextPhotoAnimation, _setNextPhotoAnimation] =
     useState<AnimationConfig>();
+  const [nextPhotoAnimationId, setNextPhotoAnimationId] =
+    useState<string>();
   const setNextPhotoAnimation = useCallback((animation?: AnimationConfig) => {
     _setNextPhotoAnimation(animation);
     setNextPhotoAnimationId(undefined);
   }, []);
-  const [nextPhotoAnimationId, setNextPhotoAnimationId] =
-    useState<string>();
   const getNextPhotoAnimationId = useCallback(() => {
     const id = nanoid();
     setNextPhotoAnimationId(id);
@@ -81,6 +79,8 @@ export default function AppStateProvider({
   }, [nextPhotoAnimationId, setNextPhotoAnimation]);
   const [shouldRespondToKeyboardCommands, setShouldRespondToKeyboardCommands] =
     useState(true);
+  // ENVIRONMENT
+  const supportsHover = useSupportsHover();
   // MODAL
   const [isCommandKOpen, setIsCommandKOpen] =
     useState(false);
@@ -222,7 +222,6 @@ export default function AppStateProvider({
     <AppStateContext.Provider
       value={{
         // CORE
-        previousPathname,
         hasLoaded,
         hasLoadedWithAnimations,
         invalidateSwr,
@@ -233,6 +232,8 @@ export default function AppStateProvider({
         shouldRespondToKeyboardCommands,
         setShouldRespondToKeyboardCommands,
         categoriesWithCounts,
+        // ENVIRONMENT
+        supportsHover,
         // MODAL
         isCommandKOpen,
         setIsCommandKOpen,
