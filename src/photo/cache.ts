@@ -17,6 +17,7 @@ import {
   getUniqueLenses,
   getUniqueRecipes,
   getUniqueYears,
+  getPhotosInNeedOfUpdateCount,
 } from '@/photo/query';
 import { PhotoQueryOptions } from '@/db';
 import { parseCachedPhotoDates, parseCachedPhotosDates } from '@/photo';
@@ -41,20 +42,20 @@ import {
 import { createLensKey } from '@/lens';
 
 // Table key
-export const KEY_PHOTOS     = 'photos';
-const KEY_PHOTO             = 'photo';
+export const KEY_PHOTOS         = 'photos';
+export const KEY_PHOTO          = 'photo';
 // Field keys
-const KEY_CAMERAS           = 'cameras';
-const KEY_LENSES            = 'lenses';
-const KEY_ALBUMS            = 'albums';
-const KEY_TAGS              = 'tags';
-const KEY_FILMS             = 'films';
-const KEY_RECIPES           = 'recipes';
-const KEY_FOCAL_LENGTHS     = 'focal-lengths';
-const KEY_YEARS             = 'years';
+export const KEY_CAMERAS        = 'cameras';
+export const KEY_LENSES         = 'lenses';
+export const KEY_ALBUMS         = 'albums';
+export const KEY_TAGS           = 'tags';
+export const KEY_FILMS          = 'films';
+export const KEY_RECIPES        = 'recipes';
+export const KEY_FOCAL_LENGTHS  = 'focal-lengths';
+export const KEY_YEARS          = 'years';
 // Type keys
-const KEY_COUNT             = 'count';
-const KEY_DATE_RANGE        = 'date-range';
+export const KEY_COUNT          = 'count';
+export const KEY_DATE_RANGE     = 'date-range';
 
 const getCacheKeyForPhotoQueryOptions = (
   options: PhotoQueryOptions,
@@ -72,7 +73,7 @@ const getCacheKeyForPhotoQueryOptions = (
     }
     case 'album': {
       const album = options[option];
-      return album ? album.slug : null;
+      return album?.id ? `${option}-${album.id}` : null;
     }
     case 'takenBefore':
     case 'takenAfterInclusive': 
@@ -223,6 +224,12 @@ export const getPhotoCached = (...args: Parameters<typeof getPhoto>) =>
     getPhoto,
     [KEY_PHOTOS, KEY_PHOTO],
   )(...args).then(photo => photo ? parseCachedPhotoDates(photo) : undefined);
+
+export const getPhotosInNeedOfUpdateCountCached =
+  unstable_cache(
+    getPhotosInNeedOfUpdateCount,
+    [KEY_PHOTOS, KEY_COUNT],
+  );
   
 export const getUniqueTagsCached =
   unstable_cache(
