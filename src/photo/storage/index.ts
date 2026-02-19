@@ -10,6 +10,7 @@ import {
   uploadFileFromClient,
 } from '@/platforms/storage';
 import { Photo } from '..';
+import { fetchBase64ImageFromUrl } from '@/utility/image';
 
 const PREFIX_PHOTO = 'photo';
 const PREFIX_UPLOAD = 'upload';
@@ -127,24 +128,19 @@ export const getOptimizedPhotoUrlForManipulation = (
     compatibilityMode,
   });
 
-const getTestOptimizedPhotoUrl = (url: string) => {
+export const getOptimizedPhotoUrlForSuffix = (
+  url: string,
+  suffix: OptimizedSuffix,
+) => {
   const { urlBase, fileNameBase } = getFileNamePartsFromStorageUrl(url);
-  return getOptimizedUrl({
-    urlBase,
-    fileNameBase,
-    suffix: 'sm',
-  });
+  return getOptimizedUrl({ urlBase, fileNameBase, suffix });
 };
+
+const getTestOptimizedPhotoUrl = (url: string) =>
+  getOptimizedPhotoUrlForSuffix(url, 'sm');
 
 export const doesPhotoUrlHaveOptimizedFiles = async (url: string) =>
   fetch(getTestOptimizedPhotoUrl(url)).then(res => res.ok);
-
-export const doAllPhotosHaveOptimizedFiles = async (photos: Photo[]) =>
-  Promise.all(photos.map(async ({ url }) => fetch(
-    await getSignedUrlForUrl(getTestOptimizedPhotoUrl(url), 'GET'),
-  )))
-    .then(urls => urls.every(url => url.ok))
-    .catch(() => false);
 
 export const getStorageUrlsForPhoto = async ({ url }: Photo) => {
   const getSortScoreForUrl = (url: string) => {
@@ -161,3 +157,36 @@ export const getStorageUrlsForPhoto = async ({ url }: Photo) => {
     urls.sort((a, b) => getSortScoreForUrl(a.url) - getSortScoreForUrl(b.url)),
   );
 };
+
+export const getDataUrlsForPhotos = async (
+  photos: Photo[],
+  optimizedSuffix: OptimizedSuffix,
+  nextImageWidth: NextImageSize,
+  addBypassSecret: boolean,
+) =>
+  Promise.all(photos
+    .map(async({ id, url }) => {
+      // Check for optimized image first
+      const optimizedUrl =await getSignedUrlForUrl(
+        getOptimizedPhotoUrlForSuffix(url, optimizedSuffix),
+        'GET',
+      );
+      const optimizedUrlData = await fetchBase64ImageFromUrl(optimizedUrl);
+
+      if (optimizedUrlData) {
+        return { id, urlData: optimizedUrlData };
+      } else {
+        // Fall back on `next/image` if optimized image is not available
+        const nextImageUrl = getOptimizedPhotoUrl({
+          imageUrl: url,
+          size: nextImageWidth,
+          addBypassSecret,
+        });
+        const nextImageUrlData = await fetchBase64ImageFromUrl(nextImageUrl);
+        return { id, urlData: nextImageUrlData };
+      }
+    }))
+    .then(urls =>(urls.every(({ urlData }) => Boolean(urlData))
+      ? urls
+      // If any url is undefined, return an empty array
+      : []) as { id: string, urlData: string }[]);
