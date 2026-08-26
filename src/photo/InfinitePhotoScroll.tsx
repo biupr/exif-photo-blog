@@ -13,7 +13,11 @@ import useVisibility from '@/utility/useVisibility';
 import { SortBy } from './sort';
 import { SWR_KEYS } from '@/swr';
 import { useAppText } from '@/i18n/state/client';
-import useIsHydrated from '@/utility/useIsHydrated';
+import { isTagPrivate } from '@/tag';
+
+// Future reader:
+// Adding useIsHydrated check caused <PhotoLarge /> images
+// to flicker on home feed
 
 const SIZE_KEY_SEPARATOR = '__';
 const getSizeFromKey = (key: string) =>
@@ -78,6 +82,8 @@ export default function InfinitePhotoScroll({
       : `${SWR_KEYS.INFINITE_PHOTO_SCROLL}-${cacheKey}${SIZE_KEY_SEPARATOR}${size}`
     , [cacheKey]);
 
+  const isPrivateTag = isTagPrivate(tag);
+
   const fetcher = useCallback((
     keyWithSize: string,
     warmOnly?: boolean,
@@ -88,13 +94,15 @@ export default function InfinitePhotoScroll({
       sortWithPriority,
       excludeFromFeeds,
       limit: itemsPerPage,
-      hidden: includeHiddenPhotos ? 'include' : 'exclude',
+      hidden: isPrivateTag
+        ? 'only'
+        : includeHiddenPhotos ? 'include' : 'exclude',
       recent,
       year,
       camera,
       lens,
       album,
-      tag,
+      tag: isPrivateTag ? undefined : tag,
       recipe,
       film,
       focal,
@@ -107,6 +115,7 @@ export default function InfinitePhotoScroll({
     initialOffset,
     itemsPerPage,
     includeHiddenPhotos,
+    isPrivateTag,
     recent,
     year,
     camera,
@@ -133,13 +142,6 @@ export default function InfinitePhotoScroll({
   const buttonContainerRef = useRef<HTMLDivElement>(null);
 
   const isLoadingOrValidating = isLoading || isValidating;
-
-  // SWR's loading state can differ between the server-rendered pass and the
-  // client's first hydration pass, causing a hydration mismatch on the
-  // "load more" button below. useSyncExternalStore lets the server and
-  // client intentionally diverge here without triggering that mismatch.
-  const isHydrated = useIsHydrated();
-  const isLoadingOrValidatingForDisplay = isHydrated && isLoadingOrValidating;
 
   const isFinished = useMemo(() =>
     data && data[data.length - 1]?.length < itemsPerPage
@@ -169,15 +171,15 @@ export default function InfinitePhotoScroll({
       <button
         type="button"
         onClick={() => error ? mutate() : advance()}
-        disabled={isLoadingOrValidatingForDisplay}
+        disabled={isLoadingOrValidating}
         className={clsx(
           'w-full flex justify-center',
-          isLoadingOrValidatingForDisplay && 'subtle',
+          isLoadingOrValidating && 'subtle',
         )}
       >
         {error
           ? utility.tryAgain
-          : isLoadingOrValidatingForDisplay
+          : isLoadingOrValidating
             ? <Spinner size={20} />
             : utility.loadMore}
       </button>
