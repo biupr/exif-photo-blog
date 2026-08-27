@@ -162,6 +162,40 @@ export const TEXT: I18N = {
     delete: 'Sil',
     // eslint-disable-next-line max-len
     deleteConfirm: '"{{photoTitle}}" adlı fotoğrafı silmek istediğinize emin misiniz?',
+    setVisibility: 'Görünürlük',
+    setVisibilityPlaceholder: '{{quantity}} için görünürlüğü ayarlayın ...',
+    // eslint-disable-next-line max-len
+    setVisibilityConfirm: '{{quantity}} için görünürlüğü "{{visibility}}" olarak ayarlamak istediğinize emin misiniz?',
+    setVisibilitySuccess: 'Görünürlük {{quantity}} için güncellendi',
+    visibilityDefault: 'Varsayılan',
+    visibilityDefaultNote: 'Her yerde görüntülenebilir',
+    visibilityExclude: 'Akışlardan gizle',
+    visibilityExcludeNote: 'Ana sayfa, rss.xml vb. dışında tutulur',
+    visibilityPrivate: 'Gizli',
+    visibilityPrivateNote: 'Yalnızca yöneticiler görebilir',
+    selectPhotosBelow: 'Aşağıdan fotoğraf seçin',
+    selectPhotosBelowShort: 'Seç',
+    selecting: 'Seçiliyor ...',
+    selectingShort: 'Seçiliyor',
+    photosSelected: '{{quantity}} seçildi',
+    selectAll: 'Tümünü Seç',
+    apply: 'Uygula',
+    tagPlaceholder: '{{quantity}} etiketle ...',
+    // eslint-disable-next-line max-len
+    tagConfirm: '{{quantity}} için etiket uygulamak istediğinize emin misiniz? Bu işlem geri alınamaz.',
+    tagSuccess: '{{quantity}} {{tags}} olarak etiketlendi',
+    albumPlaceholder: '{{quantity}} albümlere ekle ...',
+    // eslint-disable-next-line max-len
+    albumConfirm: '{{quantity}} bu albümlere eklemek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+    albumSuccess: '{{quantity}} {{albums}} albümüne eklendi',
+    // eslint-disable-next-line max-len
+    favoriteConfirm: '{{quantity}} favorilere eklemek istediğinize emin misiniz?',
+    favoriteSuccess: '{{quantity}} favorilere eklendi',
+    batchActionFailure: '{{quantity}} güncellenirken bir sorun oluştu',
+    // eslint-disable-next-line max-len
+    deletePhotosConfirm: '{{quantity}} silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+    deletePhotosSuccess: '{{quantity}} silindi',
+    deletePhotosFailure: '{{quantity}} silinirken bir sorun oluştu',
   },
   onboarding: {
     setupComplete: 'Kurulum Tamamlandı!',

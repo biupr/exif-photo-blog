@@ -40,11 +40,9 @@ export default function PhotoLink({
         ref,
         className,
         href: pathForPhoto({ photo, ...categories }),
-        onClick: () => {
-          if (nextPhotoAnimation) {
-            setNextPhotoAnimation?.(nextPhotoAnimation);
-          }
-        },
+        // Always set (or clear) so a stale prev/next animation can't leak
+        // into a plain thumbnail click and override its default scale-up
+        onClick: () => setNextPhotoAnimation?.(nextPhotoAnimation),
         scroll,
         prefetch,
       }
