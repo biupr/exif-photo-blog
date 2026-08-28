@@ -11,7 +11,6 @@ import { clsx } from 'clsx/lite';
 import { useAppState } from '@/app/AppState';
 import useVisibility from '@/utility/useVisibility';
 import { SortBy } from './sort';
-import { SWR_KEYS } from '@/swr';
 import { useAppText } from '@/i18n/state/client';
 import { isTagPrivate } from '@/tag';
 
@@ -78,8 +77,7 @@ export default function InfinitePhotoScroll({
   const keyGenerator = useCallback(
     (size: number, prev: Photo[]) => prev && prev.length === 0
       ? null
-      // eslint-disable-next-line max-len
-      : `${SWR_KEYS.INFINITE_PHOTO_SCROLL}-${cacheKey}${SIZE_KEY_SEPARATOR}${size}`
+      : `${cacheKey}${SIZE_KEY_SEPARATOR}${size}`
     , [cacheKey]);
 
   const isPrivateTag = isTagPrivate(tag);
@@ -157,9 +155,13 @@ export default function InfinitePhotoScroll({
     photoId: string,
     revalidateRemainingPhotos?: boolean,
   ) => mutate(data, {
-    revalidate: (_data: Photo[], [_, size]:[string, number]) => {
+    // SWR passes the page's key, so derive its index from the key itself.
+    // A photo absent from loaded pages lives in server-rendered content,
+    // which shifts every page when it's removed
+    revalidate: (_data: Photo[], key: string) => {
       const i = (data ?? []).findIndex(photos =>
         photos.some(photo => photo.id === photoId));
+      const size = getSizeFromKey(key);
       return revalidateRemainingPhotos ? size >= i : size === i;
     },
   } as any), [data, mutate]);
