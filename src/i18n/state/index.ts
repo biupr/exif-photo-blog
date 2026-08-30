@@ -27,6 +27,13 @@ export const generateAppTextState = (i18n: I18N) => {
         i18n.category.focalLengthShare.replace('{{focal}}', focal),
       recentSubhead: (distance: string) =>
         i18n.category.recentSubhead.replace('{{distance}}', distance),
+      queryTitle: (query: string) =>
+        i18n.category.queryTitle.replace('{{query}}', query),
+    },
+    cmdk: {
+      ...i18n.cmdk,
+      found: (quantity: string) =>
+        i18n.cmdk.found.replace('{{quantity}}', quantity),
     },
     about: {
       ...i18n.about,
