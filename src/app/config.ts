@@ -388,8 +388,8 @@ export const SHOW_ZOOM_CONTROLS =
   process.env.NEXT_PUBLIC_HIDE_ZOOM_CONTROLS !== '1';
 export const SHOW_TAKEN_AT_TIME =
   process.env.NEXT_PUBLIC_HIDE_TAKEN_AT_TIME !== '1';
-export const SHOW_REPO_LINK =
-  process.env.NEXT_PUBLIC_HIDE_REPO_LINK !== '1';
+export const SHOW_TEMPLATE_ATTRIBUTION =
+  process.env.NEXT_PUBLIC_HIDE_TEMPLATE_ATTRIBUTION !== '1';
 
 // GRID
 
@@ -448,13 +448,18 @@ export const PAGE_SCRIPT_URLS = process.env.PAGE_SCRIPT_URLS
     .filter(url => url.startsWith('https://'))
   : [];
 
+// EXPERIMENTAL
+
+export const SHOW_NEW_ABOUT_PAGE = process.env.SHOW_NEW_ABOUT_PAGE === '1';
+
 // DEBUGGING
 
 export const DEBUG_OUTPUTS_ENABLED = process.env.DISABLE_DEBUG_OUTPUTS !== '1';
 
 // INTERNAL
 
-export const ADMIN_DEBUG_TOOLS_ENABLED = process.env.ADMIN_DEBUG_TOOLS === '1';
+export const ADMIN_DEBUG_TOOLS_ENABLED =
+  process.env.ADMIN_DEBUG_TOOLS === '1';
 export const ADMIN_SQL_DEBUG_ENABLED =
   process.env.ADMIN_SQL_DEBUG === '1' &&
   !IS_BUILDING;
@@ -562,7 +567,7 @@ export const APP_CONFIGURATION = {
   alwaysShowExposureComp: ALWAYS_SHOW_EXPOSURE_COMP,
   showZoomControls: SHOW_ZOOM_CONTROLS,
   showTakenAtTimeHidden: SHOW_TAKEN_AT_TIME,
-  showRepoLink: SHOW_REPO_LINK,
+  showRepoLink: SHOW_TEMPLATE_ATTRIBUTION,
   // Grid
   isGridHomepageEnabled: GRID_HOMEPAGE_ENABLED,
   isMasonryGridEnabled: MASONRY_GRID_ENABLED,
@@ -646,6 +651,9 @@ const ALL_DEPRECATED_ENV_VARS = [{
 }, {
   old: 'GOOGLE_PLACES_API_KEY',
   replacement: 'GOOGLE_PLACES_GEOCODING_API_KEY',
+}, {
+  old: 'NEXT_PUBLIC_HIDE_REPO_LINK',
+  replacement: 'NEXT_PUBLIC_HIDE_TEMPLATE_ATTRIBUTION',
 }];
 
 export const USED_DEPRECATED_ENV_VARS = ALL_DEPRECATED_ENV_VARS
