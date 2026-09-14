@@ -10,19 +10,53 @@ export interface PhotoColorData {
   colors: Oklch[]
 }
 
+const isOklch = (value: unknown): value is Oklch =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as Oklch).l === 'number' &&
+  typeof (value as Oklch).c === 'number' &&
+  typeof (value as Oklch).h === 'number' &&
+  !Number.isNaN((value as Oklch).l) &&
+  !Number.isNaN((value as Oklch).c) &&
+  !Number.isNaN((value as Oklch).h);
+
 export const convertJsonStringToOklch = (jsonString = '') => {
-  const matches = jsonString
-    .match(/`*{ *l: *([0-9\.]+), *c: *([0-9\.]+), *h: *([0-9\.]+) *}`*/);
-  if (matches &&
-    matches[1] &&
-    matches[2] &&
-    matches[3]
-  ) {
-    return {
+  const trimmed = jsonString.trim();
+  if (!trimmed) { return; }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (isOklch(parsed)) { return parsed; }
+  } catch {
+    // Fall through to `{ l, c, h }` object-literal format
+  }
+
+  const matches = trimmed
+    .match(/`*{ *l: *([0-9.]+), *c: *([0-9.]+), *h: *([0-9.]+) *}`*/);
+  if (matches?.[1] && matches[2] && matches[3]) {
+    const oklch = {
       l: parseFloat(matches[1]),
       c: parseFloat(matches[2]),
-      h: parseInt(matches[3]),
-    } as Oklch;
+      h: parseFloat(matches[3]),
+    };
+    if (isOklch(oklch)) { return oklch; }
+  }
+};
+
+export const convertOklchToJsonString = (oklch?: Oklch) =>
+  oklch
+    ? JSON.stringify({ c: oklch.c, h: oklch.h, l: oklch.l })
+    : '';
+
+export const applyAiColorToColorData = (
+  colorData: PhotoColorData,
+  ai?: Oklch,
+): PhotoColorData => {
+  if (ai) {
+    return { ...colorData, ai };
+  } else {
+    const { ai: _ai, ...rest } = colorData;
+    return rest;
   }
 };
 
@@ -31,21 +65,10 @@ export const convertOklchToCss = (oklch: Oklch, alpha?: number) =>
     ? `oklch(${oklch.l} ${oklch.c} ${oklch.h})`
     : `oklch(${oklch.l} ${oklch.c} ${oklch.h} / ${alpha})`;
 
-export const getProminentColorFromPhotos = (
-  photos: { colorData?: PhotoColorData }[],
-): Oklch | undefined => {
-  let prominent: Oklch | undefined;
-  for (const { colorData } of photos) {
-    if (!colorData) { continue; }
-    const color = colorData.colors[0]
-      ?? colorData.ai
-      ?? colorData.average;
-    if (color && (prominent === undefined || color.c > prominent.c)) {
-      prominent = color;
-    }
-  }
-  return prominent;
-};
+export const getDominantColorFromPhoto = (
+  photo?: { colorData?: PhotoColorData },
+): Oklch | undefined =>
+  photo?.colorData?.ai ?? photo?.colorData?.colors[0];
 
 export const logOklch = (oklch: Oklch) =>
   `L:${oklch.l.toFixed(2)} C:${oklch.c.toFixed(2)} H:${oklch.h.toFixed(2)}`;

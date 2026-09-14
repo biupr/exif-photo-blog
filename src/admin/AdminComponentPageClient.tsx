@@ -9,9 +9,11 @@ import SelectMenu from '@/components/SelectMenu';
 import StatusIcon from '@/components/StatusIcon';
 import clsx from 'clsx/lite';
 import { useState } from 'react';
+import { TINT_FOLDERS } from '@/app/config';
 import { Photo } from '@/photo';
 import FieldsetPhotoChooser from '@/photo/form/FieldsetPhotoChooser';
 import PhotoFolder from '@/components/folder/PhotoFolder';
+import type { PhotoFolderTint } from '@/components/folder';
 
 export default function AdminComponentPageClient({
   photo,
@@ -27,13 +29,17 @@ export default function AdminComponentPageClient({
   photoFolders: {
     photos: Photo[]
     caption: string
+    maxPhotos: number
+    count?: number
   }[]
 }) {
   const [valuePhoto, setValuePhoto] = useState(photo?.id ?? '');
 
   const [value, setValue] = useState('visible');
 
-  const [tint, setTint] = useState(false);
+  const [tint, setTint] = useState<PhotoFolderTint>(
+    TINT_FOLDERS ? 'on' : 'off',
+  );
 
   return (
     <AppGrid
@@ -41,8 +47,8 @@ export default function AdminComponentPageClient({
         <FieldsetWithStatus
           label="Color tint"
           type="checkbox"
-          value={tint ? 'true' : 'false'}
-          onChange={value => setTint(value === 'true')}
+          value={tint !== 'off' ? 'true' : 'false'}
+          onChange={value => setTint(value === 'true' ? 'on' : 'off')}
         />
         <div className={clsx(
           'grid gap-3',
@@ -57,7 +63,8 @@ export default function AdminComponentPageClient({
                 photos={folder.photos}
                 caption={folder.caption}
                 tint={tint}
-                maxPhotos={folder.photos.length}
+                maxPhotos={folder.maxPhotos}
+                count={folder.count}
               />
             </div>)}
         </div>

@@ -156,7 +156,7 @@ export const SIDEBAR_TEXT =
   process.env.NEXT_PUBLIC_PAGE_ABOUT ||
   process.env.NEXT_PUBLIC_SITE_ABOUT;
 
-export const ABOUT_DESCRIPTION_DEFAULT =
+export const LIBRARY_DESCRIPTION_DEFAULT =
   process.env.NEXT_PUBLIC_META_DESCRIPTION ||
   process.env.NEXT_PUBLIC_SIDEBAR_TEXT;
 
@@ -376,8 +376,6 @@ export const NAV_SORT_CONTROL = COLOR_SORT_ENABLED
 
 // DISPLAY
 
-export const SHOW_ABOUT_PAGE =
-  process.env.NEXT_PUBLIC_HIDE_ABOUT_PAGE !== '1';
 export const SHOW_KEYBOARD_SHORTCUT_TOOLTIPS =
   process.env.NEXT_PUBLIC_HIDE_KEYBOARD_SHORTCUT_TOOLTIPS !== '1';
 export const SHOW_EXIF_DATA =
@@ -423,6 +421,8 @@ export const MATTE_COLOR =
   process.env.NEXT_PUBLIC_MATTE_COLOR;
 export const MATTE_COLOR_DARK =
   process.env.NEXT_PUBLIC_MATTE_COLOR_DARK;
+export const TINT_FOLDERS =
+  process.env.NEXT_PUBLIC_TINT_FOLDERS === '1';
 
 // SETTINGS
 
@@ -447,10 +447,6 @@ export const PAGE_SCRIPT_URLS = process.env.PAGE_SCRIPT_URLS
     .map(url => url.trim().toLocaleLowerCase())
     .filter(url => url.startsWith('https://'))
   : [];
-
-// EXPERIMENTAL
-
-export const SHOW_NEW_ABOUT_PAGE = process.env.SHOW_NEW_ABOUT_PAGE === '1';
 
 // DEBUGGING
 
@@ -561,7 +557,6 @@ export const APP_CONFIGURATION = {
   colorSortChromaCutoff: COLOR_SORT_CHROMA_CUTOFF,
   isSortWithPriority: USER_DEFAULT_SORT_WITH_PRIORITY,
   // Display
-  showAboutPage: SHOW_ABOUT_PAGE,
   showKeyboardShortcutTooltips: SHOW_KEYBOARD_SHORTCUT_TOOLTIPS,
   showExifInfo: SHOW_EXIF_DATA,
   alwaysShowExposureComp: ALWAYS_SHOW_EXPOSURE_COMP,
@@ -586,6 +581,7 @@ export const APP_CONFIGURATION = {
   matteColor: MATTE_COLOR,
   matteColorDark: MATTE_COLOR_DARK,
   arePhotoTitlesUppercase: UPPERCASE_TITLES,
+  areFoldersTinted: TINT_FOLDERS,
   // Settings
   arePublicDownloadsEnabled: ALLOW_PUBLIC_DOWNLOADS,
   hasSocialKeys: Boolean(process.env.NEXT_PUBLIC_SOCIAL_NETWORKS),

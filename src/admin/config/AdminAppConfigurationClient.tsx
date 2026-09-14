@@ -27,9 +27,9 @@ import {
 import clsx from 'clsx/lite';
 import Link from 'next/link';
 import {
-  PATH_ABOUT,
   PATH_ADMIN_AI_MODELS,
   PATH_FEED_JSON,
+  PATH_LIBRARY,
   PATH_RSS_XML,
 } from '@/app/path';
 import { APP_DEFAULT_SORT_BY, DEFAULT_SORT_BY_OPTIONS } from '@/photo/sort';
@@ -115,7 +115,6 @@ export default function AdminAppConfigurationClient({
   colorSortChromaCutoff,
   isSortWithPriority,
   // Display
-  showAboutPage,
   showKeyboardShortcutTooltips,
   showExifInfo,
   alwaysShowExposureComp,
@@ -137,6 +136,7 @@ export default function AdminAppConfigurationClient({
   arePhotoMatteColorsConfigured,
   matteColor,
   matteColorDark,
+  areFoldersTinted,
   // Settings
   arePublicDownloadsEnabled,
   hasSocialKeys,
@@ -264,11 +264,15 @@ export default function AdminAppConfigurationClient({
       {message}
     </ErrorNote>;
 
-  const renderLink = (href: string, children?: ReactNode) =>
+  const renderLink = (
+    href: string,
+    children?: ReactNode,
+    isExternal = true,
+  ) =>
     <Link
       href={href}
       className="underline underline-offset-3 hover:no-underline"
-      target="_blank"
+      target={isExternal ? '_blank' : undefined}
     >
       {children || href}
     </Link>;
@@ -860,16 +864,6 @@ export default function AdminAppConfigurationClient({
       case 'Display':
         return <>
           <ChecklistRow
-            title="Show about page"
-            status={showAboutPage}
-            optional
-          >
-            Set environment variable to {'"1"'} to hide
-            {' '}
-            {renderLink(PATH_ABOUT)} page
-            {renderEnvVars(['NEXT_PUBLIC_HIDE_ABOUT_PAGE'])}
-          </ChecklistRow>
-          <ChecklistRow
             title="Show keyboard shortcut tooltips"
             status={showKeyboardShortcutTooltips}
             optional
@@ -1015,6 +1009,16 @@ export default function AdminAppConfigurationClient({
                 accessory={matteColorDark && renderColorDot(matteColorDark)}
               />
             </div>
+          </ChecklistRow>
+          <ChecklistRow
+            title="Tinted folders"
+            status={areFoldersTinted}
+            optional
+          >
+            Set environment variable to {'"1"'} to show tinted folders
+            {' '}
+            on {renderLink(PATH_LIBRARY)} page
+            {renderEnvVars(['NEXT_PUBLIC_TINT_FOLDERS'])}
           </ChecklistRow>
         </>;
       case 'Settings':
