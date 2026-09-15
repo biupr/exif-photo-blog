@@ -719,12 +719,13 @@ const needsAiTextWhereClauses =
       })
     : [];
 
-const needsColorDataWhereClauses = COLOR_SORT_ENABLED
-  ? [`(
+const needsColorDataWhereClauses =
+  AI_CONTENT_GENERATION_ENABLED || COLOR_SORT_ENABLED
+    ? [`(
     color_data IS NULL OR
     color_sort IS NULL
   )`]
-  : [];
+    : [];
 
 const needsSyncWhereStatement =
   `WHERE ${[

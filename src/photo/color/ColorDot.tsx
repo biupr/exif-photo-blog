@@ -14,36 +14,63 @@ export default function ColorDot({
   title,
   className,
   includeTooltip = true,
+  size = 'medium',
 }: {
-  color: Oklch | string
+  color?: Oklch | string
   title?: string
   className?: string
   includeTooltip?: boolean
+  size?: 'small' | 'medium'
 }) {
   const isColorHex = typeof color === 'string';
+
+  const tooltipContent = includeTooltip
+    ? color
+      ? <>
+        {title &&
+          <div className="text-dim mb-1 text-left">
+            {title}
+          </div>}
+        {isColorHex
+          ? <div>{color}</div>
+          : <>
+            {renderColor('L', color.l)}
+            {renderColor('C', color.c)}
+            {renderColor('H', color.h, true)}
+          </>}
+      </>
+      : 'No Color'
+    : undefined;
+
   return (
-    <Tooltip content={includeTooltip && <>
-      {title &&
-        <div className="text-dim mb-1 text-left">
-          {title}
-        </div>}
-      {isColorHex
-        ? <div>{color}</div>
-        : <>
-          {renderColor('L', color.l)}
-          {renderColor('C', color.c)}
-          {renderColor('H', color.h, true)}
-        </>}
-    </>}>
+    <Tooltip content={tooltipContent}>
       <div
         className={clsx(
-          'size-4 rounded-full outline outline-white/25',
+          size === 'small' ? 'size-3' : 'size-4',
+          'rounded-full',
+          color
+            ? 'outline outline-white/25'
+            : clsx(
+              'flex items-center justify-center overflow-hidden',
+              'outline',
+              color
+                ? 'outline-medium'
+                : 'outline-black/50 dark:outline-white/50',
+            ),
           className,
         )}
-        style={{ backgroundColor: isColorHex
-          ? color 
-          : convertOklchToCss(color) }}
-      />
+        style={color
+          ? { backgroundColor: isColorHex
+            ? color
+            : convertOklchToCss(color) }
+          : undefined}
+      >
+        {!color &&
+          <div className={clsx(
+            'w-full h-px rotate-135',
+            'bg-black/50 dark:bg-white/50',
+          )} />}
+      </div>
     </Tooltip>
   );
 }

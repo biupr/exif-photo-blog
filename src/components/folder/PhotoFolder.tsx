@@ -11,7 +11,7 @@ import Spinner from '@/components/Spinner';
 import { CSSProperties, ReactNode } from 'react';
 import {
   convertOklchToCss,
-  getDominantColorFromPhoto,
+  getKeyColorFromPhoto,
   Oklch,
 } from '@/photo/color/client';
 import { PHOTO_FOLDER_MAX_PHOTOS, PHOTO_FOLDER_PEEK_PHOTOS } from '.';
@@ -163,9 +163,9 @@ const getFolderTint = (color: Oklch) => {
     '--folder-stroke-light': convertOklchToCss(
       { l: 0.87, c: c * 0.7, h: color.h }),
     '--folder-fill-dark': convertOklchToCss(
-      { l: 0.27, c, h: color.h }),
+      { l: 0.33, c, h: color.h }),
     '--folder-stroke-dark': convertOklchToCss(
-      { l: 0.36, c: c * 0.75, h: color.h }),
+      { l: 0.43, c: c * 0.75, h: color.h }),
   } as CSSProperties;
 };
 
@@ -243,6 +243,7 @@ export default function PhotoFolder({
   channel = true,
   tint = 'off',
   caption,
+  captionIcon,
   count,
   href,
   maxPhotos = PHOTO_FOLDER_MAX_PHOTOS,
@@ -253,6 +254,7 @@ export default function PhotoFolder({
   channel?: boolean
   tint?: PhotoFolderTint
   caption?: ReactNode
+  captionIcon?: ReactNode
   count?: number
   href?: string
   maxPhotos?: number
@@ -272,7 +274,7 @@ export default function PhotoFolder({
 
   const isTinted = tint === 'on' || tint === 'debug';
   const tintColor = isTinted
-    ? getDominantColorFromPhoto(photosInFolder[0])
+    ? getKeyColorFromPhoto(photosInFolder[0])
     : undefined;
   const tintStyle = tintColor
     ? getFolderTint(tintColor)
@@ -484,13 +486,18 @@ export default function PhotoFolder({
           uppercase
           className={clsx(
             'min-w-0',
+            captionIcon && '*:flex *:items-center *:gap-1',
             count !== undefined && clsx(
               'group-hover:max-w-[calc(100%-2.75rem)]',
               isLoading && 'max-w-[calc(100%-2.75rem)]',
             ),
           )}
         >
-          {caption}
+          {captionIcon &&
+            <span className="shrink-0 inline-flex">
+              {captionIcon}
+            </span>}
+          <span className="truncate">{caption}</span>
         </Badge>
         {count !== undefined &&
           <span
