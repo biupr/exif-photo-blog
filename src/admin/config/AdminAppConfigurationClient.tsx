@@ -28,6 +28,7 @@ import clsx from 'clsx/lite';
 import Link from 'next/link';
 import {
   PATH_ADMIN_AI_MODELS,
+  PATH_DEBUG_CONFIGURATION,
   PATH_FEED_JSON,
   PATH_LIBRARY,
   PATH_RSS_XML,
@@ -138,12 +139,13 @@ export default function AdminAppConfigurationClient({
   matteColor,
   matteColorDark,
   areFoldersTinted,
+  hasHighDensityPreviews,
+  isOgTextBottomAligned,
   // Settings
   arePublicDownloadsEnabled,
   hasSocialKeys,
   socialKeys,
   areSiteFeedsEnabled,
-  isOgTextBottomAligned,
   // Scripts & Analytics
   hasPageScriptUrls,
   pageScriptUrls,
@@ -1025,6 +1027,24 @@ export default function AdminAppConfigurationClient({
             on {renderLink(PATH_LIBRARY)} page
             {renderEnvVars(['NEXT_PUBLIC_TINT_FOLDERS'])}
           </ChecklistRow>
+          <ChecklistRow
+            title="High density previews"
+            status={hasHighDensityPreviews}
+            optional
+          >
+            Set environment variable to {'"1"'} to show up to 6 photos
+            in category image hovers and OG images (defaults to 5)
+            {renderEnvVars(['NEXT_PUBLIC_HIGH_DENSITY_PREVIEWS'])}
+          </ChecklistRow>
+          <ChecklistRow
+            title="Legacy OG text alignment"
+            status={isOgTextBottomAligned}
+            optional
+          >
+            Set environment variable to {'"BOTTOM"'} to
+            keep OG image text bottom aligned (default is {'"top"'})
+            {renderEnvVars(['NEXT_PUBLIC_OG_TEXT_ALIGNMENT'])}
+          </ChecklistRow>
         </>;
       case 'Settings':
         return <>
@@ -1062,15 +1082,6 @@ export default function AdminAppConfigurationClient({
             {' '}
             feeds
             {renderEnvVars(['NEXT_PUBLIC_SITE_FEEDS'])}
-          </ChecklistRow>
-          <ChecklistRow
-            title="Legacy OG text alignment"
-            status={isOgTextBottomAligned}
-            optional
-          >
-            Set environment variable to {'"BOTTOM"'} to
-            keep OG image text bottom aligned (default is {'"top"'})
-            {renderEnvVars(['NEXT_PUBLIC_OG_TEXT_ALIGNMENT'])}
           </ChecklistRow>
         </>;
       case 'Scripts & Analytics':
@@ -1111,6 +1122,10 @@ export default function AdminAppConfigurationClient({
           >
             Set environment variable to {'"1"'} to disable build identifier
             and admin configuration export
+            {isDebuggingEnabled && <>
+              {' '}
+              ({renderLink(PATH_DEBUG_CONFIGURATION, 'view export.json')})
+            </>}
             {renderEnvVars(['DISABLE_DEBUG_OUTPUTS'])}
           </ChecklistRow>
         </>;
