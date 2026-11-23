@@ -325,6 +325,8 @@ export const resizeImageToBytes = async (
   quality = IMAGE_QUALITY_DEFAULT,
 ) => 
   sharp(image)
+    .rotate()
+    .keepIccProfile()
     .resize(width)
     .toFormat('jpeg', { quality })
     .toBuffer();
@@ -383,7 +385,7 @@ export const shouldPreserveRecipeTitle = (
 
 export const convertFormDataToPhotoDbInsertAndLookupRecipeTitle =
   async (...args: Parameters<typeof convertFormDataToPhotoDbInsert>):
-  Promise<ReturnType<typeof convertFormDataToPhotoDbInsert>> => {
+    Promise<ReturnType<typeof convertFormDataToPhotoDbInsert>> => {
     const photo = convertFormDataToPhotoDbInsert(...args);
 
     const data = parseRecipeData(photo.recipeData);

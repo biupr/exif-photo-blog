@@ -32,6 +32,7 @@ import Checkbox from '@/components/Checkbox';
 import {
   createPhotoAction,
   getAiColorAction,
+  regenerateOptimizedFilesForPhotoAction,
   updatePhotoAction,
 } from '../actions';
 import SubmitButtonWithStatus from '@/components/SubmitButtonWithStatus';
@@ -42,7 +43,7 @@ import {
   PATH_ADMIN_PHOTOS,
   PATH_ADMIN_UPLOADS,
 } from '@/app/path';
-import { toastSuccess, toastWarning } from '@/toast';
+import { toastSuccess, toastWaiting, toastWarning } from '@/toast';
 import { getDimensionsFromSize } from '@/utility/size';
 import ImageWithFallback from '@/components/image/ImageWithFallback';
 import { Tags, convertTagsForForm } from '@/tag';
@@ -50,6 +51,7 @@ import { AiContent } from '../ai/useAiImageQueries';
 import AiButton from '../ai/AiButton';
 import { HiSparkles } from 'react-icons/hi';
 import LoaderButton from '@/components/primitives/LoaderButton';
+import ResponsiveText from '@/components/primitives/ResponsiveText';
 import Spinner from '@/components/Spinner';
 import usePreventNavigation from '@/utility/usePreventNavigation';
 import { useAppState } from '@/app/AppState';
@@ -106,12 +108,14 @@ import {
   StorageListResponse,
 } from '@/platforms/storage';
 import SmallDisclosure from '@/components/SmallDisclosure';
-import { TbPhoto } from 'react-icons/tb';
+import { TbFiles, TbPhoto } from 'react-icons/tb';
+import IconGrSync from '@/components/icons/IconGrSync';
 import { Albums } from '@/album';
 import FieldsetAlbum from '@/album/FieldsetAlbum';
 import Form from 'next/form';
 import { useSearchParams } from 'next/navigation';
 import DateTimePicker from '@/components/DateTimePicker';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 const THUMBNAIL_SIZE = 300;
 /** Form cap. The floating thumb is placed to the right of this. */
@@ -189,6 +193,9 @@ export default function PhotoForm({
     .join(','));
   const [isLoadingPlace, setIsLoadingPlace] = useState(false);
   const [isLoadingKeyColor, setIsLoadingKeyColor] = useState(false);
+  const [isRegeneratingOptimized, setIsRegeneratingOptimized] = useState(false);
+  const [optimizedGeneratedAtOverride, setOptimizedGeneratedAtOverride] =
+    useState<Date>();
 
   const areAlbumTitlesModified = albumTitles !== photoAlbumTitles
     .sort((a, b) => a.localeCompare(b))
@@ -271,6 +278,43 @@ export default function PhotoForm({
   }, [updatedExifData]);
 
   const url = formData.url ?? '';
+
+  const optimizedGeneratedAt = useMemo(() => {
+    if (optimizedGeneratedAtOverride) {
+      return optimizedGeneratedAtOverride;
+    }
+    const dates = photoStorageUrls
+      .filter(({ url }) =>
+        Boolean(getFileNamePartsFromStorageUrl(url).fileModifier))
+      .map(({ uploadedAt }) => uploadedAt)
+      .filter((date): date is Date => Boolean(date))
+      .sort((a, b) => b.getTime() - a.getTime());
+    return dates[0];
+  }, [optimizedGeneratedAtOverride, photoStorageUrls]);
+
+  const regenerateOptimizedFiles = useCallback(() => {
+    if (!formData.id) { return; }
+    setIsRegeneratingOptimized(true);
+    const toastId = toastWaiting(appText.admin.filesRegeneratingOptimized);
+    regenerateOptimizedFilesForPhotoAction(formData.id)
+      .then(count => {
+        setOptimizedGeneratedAtOverride(new Date());
+        toastSuccess(
+          appText.admin.filesRegenerateOptimizedSuccess(count ?? 0),
+          undefined,
+          toastId,
+        );
+      })
+      .catch(error => {
+        console.error(error);
+        toastWarning(
+          appText.admin.filesRegenerateOptimizedFailure,
+          undefined,
+          toastId,
+        );
+      })
+      .finally(() => setIsRegeneratingOptimized(false));
+  }, [appText.admin, formData.id]);
 
   const regenerateKeyColor = useCallback(async () => {
     if (!url) { return; }
@@ -419,32 +463,85 @@ export default function PhotoForm({
             No storage found for photo
           </span>
           : photoStorageUrls.length > 1
-            ? <SmallDisclosure label="Optimized file set">
+            ? <SmallDisclosure label={
+              <span className="inline-flex items-center gap-1.5">
+                <TbFiles className={clsx(
+                  'shrink-0 text-[16px]',
+                  'translate-[-1px] translate-y-[0.5px]',
+                  'text-medium',
+                )} />
+                Optimized file set
+              </span>
+            }>
               <div className="space-y-1">
                 {photoStorageUrls.map(({ url, size }) => {
                   const {
                     fileName,
                     fileModifier,
                   } = getFileNamePartsFromStorageUrl(url);
+                  const isOptimized = Boolean(fileModifier);
                   return <div
                     key={url}
                     className="flex items-center gap-2"
                   >
-                    <TbPhoto className="translate-y-[1px] text-medium" />
+                    {isOptimized && isRegeneratingOptimized
+                      ? <Spinner
+                        size={14}
+                        color="dim"
+                        className="shrink-0 translate-y-[1px]"
+                      />
+                      : <TbPhoto className={clsx(
+                        'shrink-0 translate-y-[1px] text-medium',
+                      )} />}
                     <Link
                       href={url}
                       target="_blank"
+                      className="truncate"
                     >
                       {fileName}
                     </Link>
-                    <span className="text-dim">
-                      {size}
+                    <span className="shrink-0 whitespace-nowrap text-dim">
+                      {isOptimized && isRegeneratingOptimized ? '—' : size}
                       {/* Show dimensions for original file when available */}
-                      {!fileModifier && formData.width && formData.height &&
+                      {!isOptimized && formData.width && formData.height &&
                         ` @ ${formData.width}×${formData.height}`}
                     </span>
                   </div>;
                 })}
+                <div className={clsx(
+                  'flex items-center justify-between gap-2',
+                  'mt-2 -ml-2 px-2 py-1.5',
+                  'rounded-lg bg-extra-dim',
+                )}>
+                  {optimizedGeneratedAt &&
+                    <span className="text-medium">
+                      <span className="sm:hidden">
+                        {`Generated ${formatDistanceToNowStrict(
+                          optimizedGeneratedAt,
+                        )} ago`}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {`Files generated ${formatDistanceToNowStrict(
+                          optimizedGeneratedAt,
+                        )} ago`}
+                      </span>
+                    </span>}
+                  <LoaderButton
+                    styleAs="link"
+                    hideText="never"
+                    icon={<IconGrSync
+                      className="size-3.5 translate-y-[0.5px] text-medium"
+                    />}
+                    className="h-4.5"
+                    classNameIcon="size-3.5"
+                    isLoading={isRegeneratingOptimized}
+                    onClick={regenerateOptimizedFiles}
+                  >
+                    <ResponsiveText shortText="Regenerate">
+                      Regenerate Files
+                    </ResponsiveText>
+                  </LoaderButton>
+                </div>
               </div>
             </SmallDisclosure>
             : null;
